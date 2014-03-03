@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='meta-TreeItem'>/**
+</span> * @class meta.TreeItem
+ *
+ * {@link Tree}数据源的配置项
+ */
+function TreeItem() {
+<span id='meta-TreeItem-property-id'>    /**
+</span>     * @property {string} id
+     *
+     * 节点的唯一标识符，在同一棵树中不得重复
+     */
+    this.id;
+
+<span id='meta-TreeItem-property-text'>    /**
+</span>     * @property {string} text
+     *
+     * 显示的文本
+     */
+    this.text;
+
+<span id='meta-TreeItem-property-children'>    /**
+</span>     * @property {meta.TreeItem[]} children
+     *
+     * 子树
+     */
+    this.children;
+}
+</pre>
+</body>
+</html>
