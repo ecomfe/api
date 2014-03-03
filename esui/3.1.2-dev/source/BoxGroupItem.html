@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='meta-BoxGroupItem'>/**
+</span> * @class meta.BoxGroupItem
+ *
+ * {@link BoxGroup}控件数据源配置项
+ */
+function BoxGroupItem() {
+<span id='meta-BoxGroupItem-property-title'>    /**
+</span>     * @property {string} [title]
+     *
+     * 标签文字，与{@link meta.BoxGroupItem#name}
+     * 和{@link meta.BoxGroupItem#text}作用相同
+     *
+     * 三个属性的优先级为`title &gt; name &gt; text`
+     */
+    this.title;
+
+<span id='meta-BoxGroupItem-property-name'>    /**
+</span>     * @property {string} [name]
+     *
+     * 标签文字，与{@link meta.BoxGroupItem#title}
+     * 和{@link meta.BoxGroupItem#text}作用相同
+     *
+     * 三个属性的优先级为`title &gt; name &gt; text`
+     */
+    this.name;
+
+<span id='meta-BoxGroupItem-property-text'>    /**
+</span>     * @property {string} [text]
+     *
+     * 标签文字，与{@link meta.BoxGroupItem#title}
+     * 和{@link meta.BoxGroupItem#name}作用相同
+     *
+     * 三个属性的优先级为`title &gt; name &gt; text`
+     */
+    this.text;
+
+<span id='meta-BoxGroupItem-property-value'>    /**
+</span>     * @property {string} value
+     *
+     * 选框的值
+     */
+    this.value;
+}
+</pre>
+</body>
+</html>

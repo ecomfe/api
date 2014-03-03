@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/**
+</span> * ESUI (Enterprise Simple UI)
+ * Copyright 2013 Baidu Inc. All rights reserved.
+ * 
+ * @ignore
+ * @file Frame控件
+ * @author otakustay
+ */
+define(
+    function (require) {
+        var lib = require(&#39;esui/lib&#39;);
+        var Control = require(&#39;esui/Control&#39;);
+
+<span id='Frame-method-constructor'><span id='Frame'>        /**
+</span></span>         * Frame控件
+         *
+         * @extends Control
+         * @param {Object} [options] 初始化参数
+         * @constructor
+         */
+        function Frame(options) {
+            Control.apply(this, arguments);
+        }
+
+<span id='Frame-property-type'>        /**
+</span>         * 控件类型，始终为`&quot;Frame&quot;`
+         *
+         * @type {string}
+         * @readonly
+         * @override
+         */
+        Frame.prototype.type = &#39;Frame&#39;;
+
+<span id='Frame-method-createMain'>        /**
+</span>         * 创建主元素
+         *
+         * @return {HTMLElement}
+         * @protected
+         * @override
+         */
+        Frame.prototype.createMain = function () {
+            return document.createElement(&#39;iframe&#39;);
+        };
+
+<span id='Frame-method-initOptions'>        /**
+</span>         * 初始化参数
+         *
+         * @param {Object} [options] 构造函数传入的参数
+         * @protected
+         * @override
+         */
+        Frame.prototype.initOptions = function (options) {
+            var properties = {};
+            lib.extend(properties, options);
+
+            if (!properties.src) {
+                properties.src = this.main.src;
+            }
+
+            this.setProperties(properties);
+        };
+
+<span id='Frame-method-initStructure'>        /**
+</span>         * 初始化DOM结构
+         *
+         * @protected
+         * @override
+         */
+        Frame.prototype.initStructure = function () {
+            this.main.frameborder = &#39;no&#39;;
+            this.main.marginHeight = &#39;0&#39;;
+            this.main.marginWeight = &#39;0&#39;;
+
+            this.helper.addDOMEvent(
+                this.main,
+                &#39;load&#39;,
+                lib.bind(this.fire, this, &#39;load&#39;)
+            );
+            this.helper.addDOMEvent(
+                this.main,
+                &#39;message&#39;,
+                function (e) {
+                    var event = {
+                        origin: e.origin,
+                        data: e.data
+                    };
+                    this.fire(&#39;message&#39;, event);
+                }
+            );
+        };
+
+        var paint = require(&#39;esui/painters&#39;);
+
+<span id='Frame-property-repaint'>        /**
+</span>         * 渲染自身
+         *
+         * @override
+         * @protected
+         */
+        Frame.prototype.repaint = paint.createRepaint(
+            Control.prototype.repaint,
+            {
+                name: &#39;src&#39;,
+                paint: function (frame, src) {
+                    // 避免重复加载`&lt;iframe&gt;`的地址，第一次渲染时没有比对功能
+                    if (frame.main.src === src) {
+                        return;
+                    }
+
+                    frame.main.src = src;
+                }
+            },
+            paint.style(&#39;height&#39;),
+            paint.style(&#39;width&#39;)
+        );
+
+<span id='Frame-method-callContentMethod'>        /**
+</span>         * 调用iframe内容窗口的方法
+         *
+         * @param {string} methodName 方法名称
+         * @param {Mixed...} args 调用时的参数
+         * @return {Mixed}
+         * @throws {Error} 内容窗口还未加载完毕无法使用
+         */
+        Frame.prototype.callContentMethod = function (methodName) {
+            var args = [].slice.call(arguments, 1);
+            var contentWindow = this.main.contentWindow;
+
+            if (!contentWindow) {
+                throw new Error(&#39;No content window on this iframe&#39;);
+            }
+
+            if (typeof contentWindow[methodName] !== &#39;function&#39;) {
+                throw new Error(&#39;No &quot;&#39; + methodName + &#39;&quot; method on window&#39;);
+            }
+
+            return contentWindow[methodName].apply(contentWindow, args);
+        };
+
+<span id='Frame-method-postMessage'>        /**
+</span>         * 向iframe内容窗口发送消息
+         *
+         * @param {Mixed} message 发送的消息对象
+         * @param {string} targetOrigin 目标域
+         * @throws {Error} 内容窗口还未加载完毕无法使用
+         * @throws {Error} 当前浏览器不支持`postMessage`方法
+         */
+        Frame.prototype.postMessage = function (message, targetOrigin) {
+            var contentWindow = this.main.contentWindow;
+
+            if (!contentWindow) {
+                throw new Error(&#39;No content window on this iframe&#39;);
+            }
+
+            if (typeof contentWindow.postMessage !== &#39;function&#39;) {
+                throw new Error(&#39;Current browser does not support postMessage&#39;);
+            }
+
+            contentWindow.postMessage(message, targetOrigin);
+        };
+
+        lib.inherits(Frame, Control);
+        require(&#39;esui&#39;).register(Frame);
+        return Frame;
+    }
+);
+</pre>
+</body>
+</html>
