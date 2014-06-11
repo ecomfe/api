@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/**
+</span> * ESUI (Enterprise Simple UI)
+ * Copyright 2013 Baidu Inc. All rights reserved.
+ *
+ * @ignore
+ * @file 搜索框控件
+ * @author otakustay
+ */
+define(
+    function (require) {
+        var lib = require(&#39;./lib&#39;);
+        var ui = require(&#39;esui&#39;);
+        var Control = require(&#39;./Control&#39;);
+
+        require(&#39;./TextBox&#39;);
+        require(&#39;./Button&#39;);
+
+<span id='SearchBox-method-constructor'><span id='SearchBox'>        /**
+</span></span>         * 搜索框控件，由一个文本框和一个搜索按钮组成
+         *
+         * @extends Control
+         * @param {Object} [options] 初始化参数
+         * @constructor
+         */
+        function SearchBox(options) {
+            Control.apply(this, arguments);
+        }
+
+        SearchBox.prototype.type = &#39;SearchBox&#39;;
+
+<span id='SearchBox-method-initOptions'>        /**
+</span>         * 初始化参数
+         *
+         * @param {Object} [options] 构造函数传入的参数
+         * @protected
+         * @override
+         */
+        SearchBox.prototype.initOptions = function (options) {
+            var properties = {};
+            lib.extend(properties, options);
+
+            if (properties.disabled === &#39;false&#39;) {
+                properties.disabled = false;
+            }
+
+            if (lib.isInput(this.main)) {
+                if (!properties.placeholder) {
+                    properties.placeholder =
+                        lib.getAttribute(this.main, &#39;placeholder&#39;);
+                }
+
+                if (!properties.text) {
+                    properties.text = this.main.value;
+                }
+
+                if (!properties.maxLength
+                    &amp;&amp; (
+                        lib.hasAttribute(this.main, &#39;maxlength&#39;)
+                        || this.main.maxLength &gt; 0
+                    )
+                ) {
+                    properties.maxLength = this.main.maxLength;
+                }
+            }
+            //TODO: custom elments 的兼容
+            else {
+                if (!properties.text) {
+                    properties.text = lib.getText(this.main);
+                }
+            }
+
+            if (!properties.title) {
+                properties.title = this.main.title;
+            }
+
+            Control.prototype.initOptions.call(this, properties);
+        };
+
+<span id='SearchBox-method-initStructure'>        /**
+</span>         * 初始化DOM结构
+         *
+         * @protected
+         * @override
+         */
+        SearchBox.prototype.initStructure = function () {
+            // 一个搜索框由一个文本框和一个按钮组成
+            var textboxOptions = {
+                mode: &#39;text&#39;,
+                childName: &#39;text&#39;,
+                height: this.height,
+                viewContext: this.viewContext,
+                placeholder: this.placeholder
+            };
+
+            if (lib.isInput(this.main)) {
+                this.helper.replaceMain();
+            }
+
+            var textbox = ui.create(&#39;TextBox&#39;, textboxOptions);
+            textbox.appendTo(this.main);
+            this.addChild(textbox);
+
+            var buttonOptions = {
+                main: document.createElement(&#39;span&#39;),
+                childName: &#39;button&#39;,
+                content: &#39;搜索&#39;,
+                viewContext: this.viewContext
+            };
+            var button = ui.create(&#39;Button&#39;, buttonOptions);
+            button.appendTo(this.main);
+            this.addChild(button);
+        };
+
+<span id='SearchBox-method-initEvents'>        /**
+</span>         * 初始化事件交互
+         *
+         * @protected
+         * @override
+         */
+        SearchBox.prototype.initEvents = function () {
+            var textbox = this.getChild(&#39;text&#39;);
+            var delegate = require(&#39;mini-event&#39;).delegate;
+
+            delegate(textbox, this, &#39;input&#39;);
+            delegate(textbox, &#39;enter&#39;, this, &#39;search&#39;);
+            // 回车时要取消掉默认行为，否则会把所在的表单给提交了
+            textbox.on(
+                &#39;keypress&#39;,
+                function (e) {
+                    if (e.keyCode === 13) {
+                        e.preventDefault();
+                    }
+                }
+            );
+            textbox.on(&#39;focus&#39;, lib.bind(this.addState, this, &#39;focus&#39;));
+            textbox.on(&#39;blur&#39;, lib.bind(this.removeState, this, &#39;focus&#39;));
+
+            var button = this.getChild(&#39;button&#39;);
+
+            delegate(button, &#39;click&#39;, this, &#39;search&#39;);
+        };
+
+<span id='SearchBox-method-getValue'>        /**
+</span>         * 获取输入值
+         *
+         * @return {string}
+         * @override
+         */
+        SearchBox.prototype.getValue = function () {
+            var text = this.getChild(&#39;text&#39;);
+            return text.getValue();
+        };
+
+        var paint = require(&#39;./painters&#39;);
+
+<span id='SearchBox-property-repaint'>        /**
+</span>         * 渲染自身
+         *
+         * @protected
+         * @override
+         */
+        SearchBox.prototype.repaint = paint.createRepaint(
+            Control.prototype.repaint,
+            paint.attribute(&#39;title&#39;),
+            {
+                name: [
+                    &#39;maxLength&#39;, &#39;placeholder&#39;, &#39;text&#39;,
+                    &#39;width&#39;, &#39;disabled&#39;, &#39;readOnly&#39;
+                ],
+                paint: function (box, maxLength, placeholder,
+                    text, width, disabled, readOnly
+                ) {
+                    var properties = {
+<span id='SearchBox-property-maxLength'>                        /**
+</span>                         * @property {number} maxLength
+                         *
+                         * 最大长度，参考{@link TextBox#maxLength}
+                         */
+                        maxLength: maxLength,
+<span id='SearchBox-property-placeholder'>                        /**
+</span>                         * @property {string} placeholder
+                         *
+                         * 无内容时的提示文字，参考{@link TextBox#placeholder}
+                         */
+                        placeholder: placeholder,
+<span id='SearchBox-property-text'>                        /**
+</span>                         * @property {string} text
+                         *
+                         * 文字内容
+                         */
+                        value: text,
+
+<span id='SearchBox-property-width'>                        /**
+</span>                         * @property {number} width
+                         *
+                         * 设定文本框宽度，参考{@link TextBox#width}
+                         */
+                        width: width,
+                        disabled: disabled,
+                        readOnly: readOnly
+                    };
+                    box.getChild(&#39;text&#39;).setProperties(properties);
+                }
+            },
+            {
+                name: &#39;disabled&#39;,
+                paint: function (box, disabled) {
+                    if (disabled === &#39;false&#39;) {
+                        disabled = false;
+                    }
+
+                    var button = box.getChild(&#39;button&#39;);
+                    button.set(&#39;disabled&#39;, disabled);
+                }
+            },
+            {
+<span id='SearchBox-property-fitWidth'>                /**
+</span>                 * @property {boolean} fitWidth
+                 *
+                 * 设定当前控件是否独占一行宽度
+                 */
+                name: &#39;fitWidth&#39;,
+                paint: function (box, fitWidth) {
+                    var method = fitWidth ? &#39;addState&#39; : &#39;removeState&#39;;
+                    box[method](&#39;fit-width&#39;);
+                }
+            }
+        );
+
+<span id='SearchBox-method-getTextProperty'>        /**
+</span>         * 获取用于比对的text属性值
+         *
+         * @return {string}
+         * @protected
+         */
+        SearchBox.prototype.getTextProperty = function () {
+            var textbox = this.getChild(&#39;text&#39;);
+            return textbox ? textbox.getValue() : this.text;
+        };
+
+        lib.inherits(SearchBox, Control);
+        ui.register(SearchBox);
+        return SearchBox;
+    }
+);
+</pre>
+</body>
+</html>

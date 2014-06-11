@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/**
+</span> * ESUI (Enterprise Simple UI)
+ * Copyright 2013 Baidu Inc. All rights reserved.
+ *
+ * @ignore
+ * @file 命令菜单控件
+ * @author otakustay
+ */
+define(
+    function (require) {
+        var u = require(&#39;underscore&#39;);
+        var lib = require(&#39;./lib&#39;);
+        var Control = require(&#39;./Control&#39;);
+        var Layer = require(&#39;./Layer&#39;);
+
+<span id='global-method-selectItem'>        /**
+</span>         * 选中某一项
+         *
+         * @param {Event} e DOM事件对象
+         * @ignore
+         */
+        function selectItem(e) {
+            this.layer.hide();
+
+            var target = e.target;
+            while (target !== e.currentTarget
+                &amp;&amp; !lib.hasAttribute(target, &#39;data-index&#39;)
+            ) {
+                target = target.parentNode;
+            }
+
+            if (target === e.currentTarget) {
+                return;
+            }
+
+            var index = +target.getAttribute(&#39;data-index&#39;);
+            var item = this.datasource[index];
+            if (item) {
+                if (typeof item.handler === &#39;function&#39;) {
+                    item.handler.call(this, item, index);
+                }
+            }
+
+<span id='CommandMenu-event-select'>            /**
+</span>             * @event select
+             *
+             * 选中菜单中的一项时触发
+             *
+             * @param {meta.CommandMenuItem} item 选中的项
+             * @param {number} index 选中项在{@CommandMenu#datasource}中的的索引
+             * @member CommandMenu
+             */
+            this.fire(&#39;select&#39;, { item: item, index: index });
+        }
+
+<span id='CommandMenuLayer-method-constructor'><span id='CommandMenuLayer'>        /**
+</span></span>         * CommandMenu用浮层
+         *
+         * @extends Layer
+         * @ignore
+         * @constructor
+         */
+        function CommandMenuLayer() {
+            Layer.apply(this, arguments);
+        }
+
+        lib.inherits(CommandMenuLayer, Layer);
+
+        CommandMenuLayer.prototype.nodeName = &#39;ul&#39;;
+
+        CommandMenuLayer.prototype.dock = {
+            strictWidth: true
+        };
+
+        CommandMenuLayer.prototype.render = function (element) {
+            var html = &#39;&#39;;
+
+            for (var i = 0; i &lt; this.control.datasource.length; i++) {
+                var classes = this.control.helper.getPartClasses(&#39;node&#39;);
+                if (i === this.control.activeIndex) {
+                    classes.push.apply(
+                        classes,
+                        this.control.helper.getPartClasses(&#39;node-active&#39;)
+                    );
+                }
+
+                html += &#39;&lt;li data-index=&quot;&#39; + i + &#39;&quot;&#39;
+                    + &#39; class=&quot;&#39; + classes.join(&#39; &#39;) + &#39;&quot;&gt;&#39;;
+
+                html += this.control.getItemHTML(this.control.datasource[i]);
+            }
+
+            element.innerHTML = html;
+        };
+
+        CommandMenuLayer.prototype.initBehavior = function (element) {
+            this.control.helper.addDOMEvent(element, &#39;click&#39;, selectItem);
+        };
+
+<span id='CommandMenu-method-constructor'><span id='CommandMenu'>        /**
+</span></span>         * 命令菜单
+         *
+         * 命令菜单在点击后会出现一个下拉框，根据{@link CommandMenu#datasource}配置，
+         * 点击其中一项后会执行对应的{@link meta.CommandMenuItem#handler}函数，
+         * 或者触发{@link CommandMenu#select}事件
+         *
+         * @extends {Control}
+         * @constructor
+         */
+        function CommandMenu() {
+            Control.apply(this, arguments);
+            this.layer = new CommandMenuLayer(this);
+        }
+
+<span id='CommandMenu-property-type'>        /**
+</span>         * 控件类型，始终为`&quot;CommandMenu&quot;`
+         *
+         * @type {string}
+         * @readonly
+         * @override
+         */
+        CommandMenu.prototype.type = &#39;CommandMenu&#39;;
+
+<span id='CommandMenu-property-itemTemplate'>        /**
+</span>         * 浮层中每一项的HTML模板
+         *
+         * 在模板中可以使用以下占位符：
+         *
+         * - `{string} text`：文本内容，经过HTML转义
+         *
+         * @type {string}
+         */
+        CommandMenu.prototype.itemTemplate = &#39;&lt;span&gt;${text}&lt;/span&gt;&#39;;
+
+<span id='CommandMenu-method-getItemHTML'>        /**
+</span>         * 获取浮层中每一项的HTML
+         *
+         * @param {meta.CommandMenuItem} item 当前项的数据项
+         * @return {string} 返回HTML片段
+         */
+        CommandMenu.prototype.getItemHTML = function (item) {
+            var data = {
+                text: u.escape(item.text)
+            };
+            return lib.format(this.itemTemplate, data);
+        };
+
+<span id='CommandMenu-method-initEvents'>        /**
+</span>         * 初始化事件交互
+         *
+         * @protected
+         * @override
+         */
+        CommandMenu.prototype.initEvents = function () {
+            this.helper.addDOMEvent(this.main, &#39;click&#39;, u.bind(this.layer.toggle, this.layer));
+        };
+
+        var paint = require(&#39;./painters&#39;);
+<span id='CommandMenu-method-repaint'>        /**
+</span>         * 重新渲染
+         *
+         * @method
+         * @protected
+         * @override
+         */
+        CommandMenu.prototype.repaint = paint.createRepaint(
+            Control.prototype.repaint,
+<span id='CommandMenu-property-width'>            /**
+</span>             * @property {number} width
+             *
+             * 宽度
+             */
+            paint.style(&#39;width&#39;),
+<span id='CommandMenu-property-height'>            /**
+</span>             * @property {number} height
+             *
+             * 高度，指浮层未展开时的可点击元素的高度， **与浮层高度无关**
+             */
+            paint.style(&#39;height&#39;),
+            {
+<span id='CommandMenu-property-datasource'>                /**
+</span>                 * @property {meta.CommandMenuItem[]} datasource
+                 *
+                 * 数据源，其中每一项生成浮层中的一条
+                 */
+                name: &#39;datasource&#39;,
+                paint: function (menu) {
+                    menu.layer.repaint();
+                }
+            },
+<span id='CommandMenu-property-displayText'>            /**
+</span>             * @property {string} displayText
+             *
+             * 显示在可点击元素上的文本，会自动进行HTML转义
+             */
+            paint.text(&#39;displayText&#39;),
+            {
+                name: [&#39;disabled&#39;, &#39;hidden&#39;, &#39;readOnly&#39;],
+                paint: function (menu, disabled, hidden, readOnly) {
+                    if (disabled || hidden || readOnly) {
+                        menu.layer.hide();
+                    }
+                }
+            }
+        );
+
+<span id='CommandMenu-method-dispose'>        /**
+</span>         * 销毁控件
+         *
+         * @override
+         */
+        CommandMenu.prototype.dispose = function () {
+            if (this.helper.isInStage(&#39;DISPOSED&#39;)) {
+                return;
+            }
+
+            if (this.layer) {
+                this.layer.dispose();
+                this.layer = null;
+            }
+
+            Control.prototype.dispose.apply(this, arguments);
+        };
+
+        lib.inherits(CommandMenu, Control);
+        require(&#39;./main&#39;).register(CommandMenu);
+        return CommandMenu;
+    }
+);
+</pre>
+</body>
+</html>

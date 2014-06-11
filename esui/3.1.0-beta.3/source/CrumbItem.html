@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='meta-CrumbItem'>/**
+</span> * @class meta.CrumbItem
+ *
+ * {@link Crumb}数据源的配置项
+ */
+function CrumbItem() {
+<span id='meta-CrumbItem-property-text'>    /**
+</span>     * @property {string} text
+     *
+     * 显示文本
+     */
+    this.text;
+
+<span id='meta-CrumbItem-property-href'>    /**
+</span>     * @property {string} [href]
+     *
+     * 点击链接，如果没有此属性，则将生成一个不可点击的纯文本节点，
+     * 通常表示当前页的节点是没有点击链接的
+     */
+    this.href;
+}
+</pre>
+</body>
+</html>
